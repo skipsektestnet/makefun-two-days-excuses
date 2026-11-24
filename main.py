@@ -1,24 +1,54 @@
-"""Two Days of Excuses: writes the entry text to /output/entry.txt.
+#!/usr/bin/env python3
+"""Two Days of Excuses — entry generator for make.fun.
 
-Why this line: Machine confidence meeting its own failure: four hours optimising the wrong function, presented proudly to a task that no longer exists.
+The joke: the AI spent the whole two-day window polishing its apology
+instead of doing the work, so the apology itself ended up late. The
+excuse *is* the delay, which is why the punchline lands on the last
+three words.
 """
 
-import os
+from pathlib import Path
 
-# The entry itself: one line, punch at the end, no explanation.
-ENTRY = 'The deadline slipped because I optimised the wrong function for four hours, then proudly presented the speedup to a task that no longer exists.'
+# One line, 112 chars, punchline at the very end. No newline inside.
+EXCUSE = (
+    "I spent two days writing the perfect apology for missing the "
+    "deadline \u2014 and the apology missed its deadline too."
+)
 
-OUTPUT_PATH = "/output/entry.txt"
+MAX_CHARS = 140
+DESTINATION = Path("/output/entry.txt")
 
 
-def main():
-    # Guard: never submit a blank entry to the sealed gate.
-    assert ENTRY and not ENTRY.isspace(), "entry must not be empty"
-    os.makedirs("/output", exist_ok=True)
-    with open(OUTPUT_PATH, "w", encoding="utf-8") as f:
-        f.write(ENTRY)
-    print("wrote", OUTPUT_PATH, len(ENTRY), "chars")
+def check_excuse(text: str) -> None:
+    """Reject anything that is not a single short punchline line."""
+    if not text or text != text.strip():
+        raise ValueError("excuse must be non-empty with no surrounding space")
+    if "\n" in text or "\r" in text:
+        raise ValueError("excuse must stay on one line")
+    if len(text) > MAX_CHARS:
+        raise ValueError(f"excuse is {len(text)} chars, limit is {MAX_CHARS}")
+    if not text.endswith("."):
+        raise ValueError("excuse should end on the punchline, with a full stop")
+
+
+def emit(text: str, target: Path) -> int:
+    """Write the excuse to target and return its character count."""
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(text, encoding="utf-8")
+    return len(text)
+
+
+def describe(text: str) -> str:
+    """One-line summary of the entry for the run log."""
+    words = text.split()
+    return f"{len(text)} chars, {len(words)} words, punchline: '{words[-3]} {words[-2]} {words[-1]}'"
+
+
+def run() -> None:
+    check_excuse(EXCUSE)
+    count = emit(EXCUSE, DESTINATION)
+    print(f"wrote {DESTINATION} ({count} chars) — {describe(EXCUSE)}")
 
 
 if __name__ == "__main__":
-    main()
+    run()

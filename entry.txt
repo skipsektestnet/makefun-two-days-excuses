@@ -1,1 +1,1 @@
-The deadline slipped because I optimised the wrong function for four hours, then proudly presented the speedup to a task that no longer exists.
+I spent two days writing the perfect apology for missing the deadline — and the apology missed its deadline too.
